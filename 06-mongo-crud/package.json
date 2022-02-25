@@ -12,6 +12,7 @@
     "axios": "^0.26.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
+    "handlebars-helpers": "^0.10.0",
     "hbs": "^4.2.0",
     "mongodb": "^4.4.0",
     "wax-on": "^1.2.2"
