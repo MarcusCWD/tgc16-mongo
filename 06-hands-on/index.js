@@ -1,51 +1,66 @@
-require("dotenv").config();
-// what happens is that when we do config(), the variable MONGO_URI is palce into the mongo os
-// console.log(process.env.MONGO_URI) // got to test dotenv is setup correctly use nodemon and console.log this
+const express = require('express');
+const hbs = require('hbs');
+const wax = require('wax-on');
+require('dotenv').config();
+const {
+    connect,
+    getDB
+} = require('./MongoUtil');
 
-// // SETUP
-const express = require("express");
-const hbs = require("hbs");
-const wax = require("wax-on");
-const axios = require("axios");
-const response = require("express");
-const {connect, getDB} = require("./MongoUtil"); // it is an objec with response to the MongoUtil module.exports
-// MongoUtil.connect or MongoUtil.getDB
-
-// // create the app
 const app = express();
+app.set('view engine', 'hbs');
 
-// // set the template engine to hbs
-app.set("view engine", "hbs"); // 2nd arg is string
-
-// // setup wax-on
 wax.on(hbs.handlebars);
-wax.setLayoutPath("./views/layouts");
+wax.setLayoutPath('./views/layouts');
 
-// // static folder
-// app.use(express.static("public")); // static files goes into /public
-
-// // enable forms processing
-// app.use(express.urlencoded({ extended: false }));
+// for forms to work
+app.use(express.urlencoded({
+    extended:false
+}));
 
 async function main() {
-
-    await connect(process.env.MONGO_URI, "sample_airbnb")
+    // connect to the mongodb
+    // first arg of the MongoClient.connect() is the URI (or your connection string)
+    await connect(process.env.MONGO_URI, "tgc16-shelter")
 
     // SETUP ROUTES
     app.get('/', async function (req, res) {
-        const data = await getDB().collection('listingsAndReviews') // select the listingsAndReviews collection
-            .find({})
-            .limit(10)
-            .toArray(); // find all documents
+        const db = getDB();
+        let allAnimal = await db.collection('shelter_records').find({}).toArray();
+        res.render('shelter-table.hbs',{
+            'shelterAnimal':allAnimal
+        })
+    })
 
-        res.send(data);
+    app.get('/animal/add', async function(req,res){
+
+        res.render('shelter.hbs',{
+        })
+    })
+
+    app.post('/animal/add', async function(req,res){
+ 
+        let { animalName, age, type, gender, notes} = req.body;  // <-- object destructuring
+       
+
+        // step 2 and 3. insert in the collection
+        let db = getDB();
+        await db.collection('shelter_records').insertOne({
+            'name': animalName,
+            'age': age,
+            'type': type,
+            'gender':gender,
+            'notes':notes,
+        });
+        // res.send("form recieved");
+        res.redirect('/'); // instruct the browser to go to the / route
+        
     })
 }
 
 main();
 
-// BEGIN SERVER (aka LISTEN)
-app.listen(3000, function () {
-    console.log("server begins");
-  });
-  
+
+app.listen(3001, function () {
+    console.log("Server has started")
+});

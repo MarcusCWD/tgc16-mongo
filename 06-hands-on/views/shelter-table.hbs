@@ -1,0 +1,31 @@
+{{#extends 'base'}}
+
+{{#block "content"}}
+<a href="https://3001-marcuscwd-tgc16mongo-54mczgfxxdu.ws-us34.gitpod.io/animal/add" class="btn btn-primary">test</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Type</th>
+            <th>Gender</th>
+            <th>Notes</th>
+        </tr>
+
+    </thead>
+
+    {{#each shelterAnimal }}
+        <tr>
+            <td>{{_id}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.age}}</td>
+            <td>{{this.type}}</td>
+            <td>{{this.gender}}</td>
+            <td>{{this.notes}}</td>
+        </tr>
+    {{/each}}
+</table>
+{{/block}}
+
+{{/extends}}

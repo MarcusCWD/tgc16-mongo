@@ -1,0 +1,43 @@
+{{#extends "base"}}
+{{#block "content"}}
+<form method="POST">
+    <div>
+        <label>Animal Name:</label>
+        <input type="text" class="form-control" id="name" name="animalName">
+    </div>
+    <div>
+        <label>Age:</label>
+        <input type="text" class="form-control" id="age" name="age">
+    </div>
+
+    <select class="form-select" aria-label="Default select example" name="type">
+        <option selected>Select animal type</option>
+        <option value="dog">dog</option>
+        <option value="cat">cat</option>
+        <option value="hamster">hamster</option>
+        <option value="rabbit">rabbit</option>
+        <option value="others">others</option>
+    </select>
+
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="gender" id="flexRadioDefault1" value="male" checked>
+        <label class="form-check-label" for="flexRadioDefault1">
+            Male
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="gender" id="flexRadioDefault2" value="female">
+        <label class="form-check-label" for="flexRadioDefault2">
+            Female
+        </label>
+    </div>
+
+    <div>
+        <label>Enter your notes here</label>
+        <input type="text" class="form-control" id="notes" name="notes">
+    </div>
+    <input type="submit" value="Submit" class="btn btn-primary mt-3"/>
+    
+</form>
+{{/block}}
+{{/extends}}
