@@ -11,7 +11,7 @@ const hbs = require("hbs");
 const wax = require("wax-on");
 const axios = require("axios");
 const response = require("express");
-const MongoClient  = require("mongodb");
+
 
 // // create the app
 const app = express();
@@ -47,6 +47,8 @@ async function main() {
         res.send(data);
     })
 }
+
+main();
 
 // BEGIN SERVER (aka LISTEN)
 app.listen(3000, function () {

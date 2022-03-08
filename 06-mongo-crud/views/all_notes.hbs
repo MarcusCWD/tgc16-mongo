@@ -1,0 +1,14 @@
+{{#extends 'base'}}
+
+{{#block "content"}}
+<h1>Notes for {{foodRecord.name}}</h1>
+{{#each foodRecord.notes}}
+<div class="card mt-3">
+    <div class="card-body">
+    {{this.content}}
+    </div>
+</div>
+{{/each}}
+{{/block}}
+
+{{/extends}}

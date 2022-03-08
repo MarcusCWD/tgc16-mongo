@@ -25,23 +25,27 @@ app.use(express.urlencoded({
     extended:false
 }));
 
+// defining COLLECTION_NAME so that we can change
+// the collection name easier next time
+const COLLECTION_NAME = "food_records";
+
 async function main() {
     // connect to the mongodb
     // first arg of the MongoClient.connect() is the URI (or your connection string)
     await connect(process.env.MONGO_URI, "tgc16-food")
 
     // SETUP ROUTES
-
-    //---CRUD: READ--------------------------------------------//
     app.get('/', async function (req, res) {
         const db = getDB();
-        let allFood = await db.collection('food_records').find({}).toArray();
+        // if the criteria object is empty then
+        // it means to fetch all the records from the collectrion
+        let allFood = await db.collection(COLLECTION_NAME).
+                        find({}).toArray();
         res.render('all_food.hbs',{
             'foodRecords':allFood
         })
     })
 
-    //---CRUD: CHANGE--------------------------------------------//
     app.get('/food/add', async function(req,res){
         // read in all the possible tags
         // const db = getDB();
@@ -74,7 +78,7 @@ async function main() {
 
         // step 2 and 3. insert in the collection
         let db = getDB();
-        await db.collection('food_records').insertOne({
+        await db.collection(COLLECTION_NAME).insertOne({
             'name': foodName,
             'calories': calories,
             'tags': tagArray
@@ -83,12 +87,19 @@ async function main() {
         res.send("form recieved");
     })
 
-    //---CRUD: UPDATE--------------------------------------------//
     app.get('/food/:food_id/edit', async function(req,res){
         // get the record with the id in the parameter
-        let foodRecord = await getDB().collection('food_records').findOne({
+        let foodRecord = await getDB().collection(COLLECTION_NAME).findOne({
             '_id': ObjectId(req.params.food_id)
         })
+
+        if (!Array.isArray(foodRecord.tags)) {
+            if (foodRecord.tags) {
+                foodRecord.tags = [foodRecord.tags];
+            } else {
+                foodRecord.tags = [];
+            }
+        }
 
         res.render('edit_food.hbs',{
             'food':foodRecord
@@ -103,7 +114,7 @@ async function main() {
         let foodDocument = {
             'name': req.body.foodName,
             'calories':req.body.calories,
-            
+            'tags': tags
         }
 
         await getDB().collection('food_records').updateOne({
@@ -133,11 +144,91 @@ async function main() {
         //     }
         // })
 
-
         res.redirect('/')
     })
 
+    
+    app.get('/food/:food_id/delete', async function(req,res){
+        let foodRecord = await getDB().collection(COLLECTION_NAME).findOne({
+            '_id': ObjectId(req.params.food_id)
+        })
+        res.render('delete_product.hbs',{
+            'foodRecord': foodRecord
+        })
+    })
 
+    app.post('/food/:food_id/delete', async function(req,res){
+        let food_id = req.params.food_id;
+        await getDB().collection(COLLECTION_NAME).deleteOne({
+            '_id':ObjectId(food_id)
+        })
+        res.redirect('/')
+    })
+
+    app.get('/food/:food_id/notes/add', async function(req,res){
+        let db = getDB();
+        let foodRecord = await db.collection(COLLECTION_NAME)
+                                 .findOne({
+                                    '_id': ObjectId(req.params.food_id)
+                                 })
+        res.render('add_note.hbs',{
+            'food':foodRecord
+        })
+    })
+
+    app.post('/food/:food_id/notes/add', async function(req,res){
+        let foodRecordId = req.params.food_id;
+        let noteContent = req.body.note_content;
+        await getDB().collection(COLLECTION_NAME)
+                    .updateOne({
+                        "_id":ObjectId(foodRecordId)
+                    },{
+                        '$push':{
+                            'notes':{
+                                '_id': new ObjectId(),
+                                'content': noteContent
+                                
+                            }
+                        }
+                    })
+        // always send a response from your route
+        res.redirect('/')
+    })
+
+    app.get('/food/:food_id/notes', async function(req,res){
+        let foodRecord = await getDB()
+                            .collection(COLLECTION_NAME)
+                            .findOne({
+                                '_id':ObjectId(req.params.food_id)
+                            },{
+                                'projection':{
+                                    'name':1,
+                                    'notes':1
+                                }
+                            })
+                        
+        res.render('all_notes.hbs',{
+            'foodRecord':foodRecord
+        })
+    })
+
+    app.get('/food/:food_id/notes/:note_id', async function(req,res){
+        let db = getDB();
+        let foodRecord = await db.collection(COLLECTION_NAME)
+                                .findOne({
+                                    '_id':ObjectId(req.params.food_id)
+                                },{
+                                    'projection':{
+                                        'notes': {
+                                            /* project one element from the notes array */
+                                            '$elemMatch':{
+                                                '_id':ObjectId(req.params.note_id)
+                                            }
+                                        }
+                                    }
+                                })
+        res.json(foodRecord);
+    })
 }
 
 main();
